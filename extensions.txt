@@ -1,0 +1,7 @@
+# Monitoring and observability
+npm:pi-observability
+npm:pi-web-access
+
+# Add other extensions here, e.g.:
+# npm:pi-github
+# npm:pi-web-search

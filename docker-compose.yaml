@@ -1,0 +1,39 @@
+services:
+  llama-cpp:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    container_name: llama-cpp
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - ~/.models:/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: 
+      - "--models-preset"
+      - "/models/config.ini"
+      - "--models-max"
+      - "1"
+      - "--host"
+      - "0.0.0.0"
+
+  pi-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.pi
+    container_name: pi-agent
+    depends_on:
+      - llama-cpp
+    volumes:
+      # Use the HOST_PATH variable, defaulting to the current directory (.)
+      - ~/.pi-sandbox:/root/.pi
+      - ${HOST_PATH:-.}:/app
+    environment:
+      - PI_LLM_ENDPOINT=http://llama-cpp:8080/v1
+    stdin_open: true
+    tty: true

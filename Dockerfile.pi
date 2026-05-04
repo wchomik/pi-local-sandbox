@@ -1,0 +1,27 @@
+# Use a stable Node.js image
+FROM node:20-slim
+
+# Install git as it is often required for coding agents
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+# Install the pi coding agent globally
+RUN npm install -g @mariozechner/pi-coding-agent
+
+# Install the requested extension
+RUN pi install npm:pi-observability
+
+# Copy the extensions list into the image
+COPY extensions.txt /tmp/extensions.txt
+
+# Install extensions: 
+# 1. grep -v '^#' removes comments
+# 2. grep -v '^$' removes empty lines
+# 3. xargs -L 1 runs 'pi install' for each remaining line
+RUN grep -ve '^#' -ve '^$' /tmp/extensions.txt | xargs -L 1 pi install
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Keep the container running or start the agent in a specific mode
+# Adjust this command if you want to pass specific arguments to pi
+CMD ["pi", "chat"]
